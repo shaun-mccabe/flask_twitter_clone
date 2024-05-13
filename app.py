@@ -6,7 +6,7 @@ from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
 from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
-from models import db, connect_db, User, Message
+from models import db, connect_db, User, Message, Likes
 from sqlalchemy import or_
 
 CURR_USER_KEY = "curr_user"
@@ -254,7 +254,26 @@ def like_handler(message_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    q = Likes.query.filter((Likes.user_id == session[CURR_USER_KEY]))
+
+    user_id = session.get(CURR_USER_KEY)
+
+    if not user_id:
+        flash("You must be logged in to like messages.", "danger")
+        return redirect("/")
+
+    message = Message.query.get_or_404(message_id)
+
+    # Check if the user has already liked the message
+    if message in g.user.likes:
+        # If already liked, remove the like
+        g.user.likes.remove(message)
+        db.session.commit()
+        flash("Like removed.", "success")
+    else:
+        # If not liked, add the like
+        g.user.likes.append(message)
+        db.session.commit()
+        flash("Like added.", "success")
 
     return redirect("/")
 
@@ -322,7 +341,11 @@ def homepage():
     """
 
     if g.user:
+
         # messages = Message.query.order_by(Message.timestamp.desc()).limit(100).all()
+        # l = Likes.query.all()
+        likes = [likes.message_id for likes in Likes.query.all()]
+
         f = [user.id for user in g.user.following]
         messages = (
             Message.query.join(User)
@@ -332,7 +355,7 @@ def homepage():
             .all()
         )
 
-        return render_template("home.html", messages=messages)
+        return render_template("home.html", messages=messages, likes=likes)
 
     else:
         return render_template("home-anon.html")

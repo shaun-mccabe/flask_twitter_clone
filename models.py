@@ -100,7 +100,7 @@ class User(db.Model):
         secondaryjoin=(Follows.user_being_followed_id == id),
     )
 
-    likes = db.relationship("Message", secondary="likes",backref="users")
+    likes = db.relationship("Message", secondary="likes", backref="users")
 
     def __repr__(self):
         return f"<User #{self.id}: {self.username}, {self.email}>"
@@ -185,6 +185,8 @@ class Message(db.Model):
     )
 
     user = db.relationship("User")
+
+    ##likes = db.relationship("User", secondary="likes", backref="messages")
 
 
 def connect_db(app):
