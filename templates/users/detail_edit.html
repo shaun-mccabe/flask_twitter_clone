@@ -1,10 +1,6 @@
 {% extends 'base.html' %} {% block content %}
 
-<div
-  id="warbler-hero"
-  class="full-width"
-  style="background-image: url('{{user.header_image_url}}')"
-></div>
+<div id="warbler-hero" class="full-width"></div>
 <img
   src="{{ user.image_url }}"
   alt="Image for {{ user.username }}"
@@ -43,9 +39,7 @@
           </li>
           <div class="ml-auto">
             {% if g.user.id == user.id %}
-            <a href="/users/profile" class="btn btn-outline-secondary"
-              >Edit Profile</a
-            >
+            <a href="#" class="btn btn-outline-secondary">Editing Profile</a>
             <form method="POST" action="/users/delete" class="form-inline">
               <button class="btn btn-outline-danger ml-2">
                 Delete Profile
@@ -70,12 +64,16 @@
 <div class="row">
   <div class="col-sm-3">
     <h4 id="sidebar-username">@{{ user.username }}</h4>
-    <p>{{user.bio}}</p>
-    <p class="user-location">
-      <span class="fa fa-map-marker"></span>{{user.location}}
-    </p>
   </div>
+  <form method="POST" id="user_form">
+    {{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
+    'hidden' %} {% for error in field.errors %}
+    <span class="text-danger">{{ error }}</span>
+    {% endfor %} {{ field(placeholder=field.label.text, class="form-control") }}
+    {% endfor %}
 
+    <button class="btn btn-primary btn-block btn-lg">Submit</button>
+  </form>
   {% block user_details %} {% endblock %}
 </div>
 
